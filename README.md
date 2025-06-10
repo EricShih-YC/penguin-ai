@@ -37,11 +37,3 @@ Internship Project for Week 1: Environment Setup
 - Displays data or model output to user
 - Placeholder UI is now live at `http://localhost:5173`
 
----
-
-
-
----
-
-## 📌 Directory Structure (simplified)
-
