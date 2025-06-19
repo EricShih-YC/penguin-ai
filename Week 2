@@ -1,0 +1,93 @@
+1. 
+mkdir stock-backend
+cd stock-backend
+python3 -m venv venv
+source venv/bin/activate    
+pip install fastapi uvicorn yfinance
+touch main.py
+
+2. 
+from fastapi import FastAPI, HTTPException
+import yfinance as yf
+
+app = FastAPI()
+
+3.
+@app.get("/")
+def read_root():
+    return {"message": "API is running"}
+uvicorn main:app --reload
+
+4.
+@app.get("/price-data/{ticker}")
+def get_price_data(ticker: str):
+    try:
+        stock = yf.Ticker(ticker)
+        data = stock.info
+        return {
+            "price": data.get("regularMarketPrice"),
+            "name": data.get("shortName")
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+5.
+@app.get("/fundamentals/{ticker}")
+def get_fundamentals(ticker: str):
+    try:
+        stock = yf.Ticker(ticker)
+        return stock.info 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+pip freeze > requirements.txt
+
+5. 
+brew install redis
+brew services start redis
+
+pip install redis
+
+from fastapi import FastAPI, HTTPException
+import yfinance as yf
+import redis
+import json
+
+app = FastAPI()
+
+r = redis.Redis(host='localhost', port=6379, db=0)
+
+@app.get("/price-data/{ticker}")
+def get_price_data(ticker: str):
+    cache_key = f"price:{ticker.upper()}"
+    if r.exists(cache_key):
+        return json.loads(r.get(cache_key))
+    
+    try:
+        stock = yf.Ticker(ticker)
+        data = stock.info
+        result = {
+            "price": data.get("regularMarketPrice"),
+            "name": data.get("shortName")
+        }
+        r.set(cache_key, json.dumps(result), ex=3600)  
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/fundamentals/{ticker}")
+def get_fundamentals(ticker: str):
+    cache_key = f"fundamentals:{ticker.upper()}"
+    if r.exists(cache_key):
+        return json.loads(r.get(cache_key))
+    
+    try:
+        stock = yf.Ticker(ticker)
+        result = stock.info
+        r.set(cache_key, json.dumps(result), ex=3600)  
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
