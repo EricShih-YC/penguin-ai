@@ -1,0 +1,52 @@
+# main.py
+from fastapi import FastAPI
+from indicators import compute_indicators
+
+app = FastAPI()
+
+# Define the API route to get features for a given stock ticker
+@app.get("/features/{ticker}")
+def get_features(ticker: str):
+    result = compute_indicators(ticker)
+    return result
+
+
+# indicators.py
+import yfinance as yf
+import pandas as pd
+import ta
+
+def compute_indicators(ticker: str):
+    # Download 6 months of daily stock price data
+    df = yf.download(ticker, period="6mo", interval="1d")
+    df = df.dropna()
+
+    # ===== Calculate Technical Indicators =====
+
+    # Moving Average (20-day Simple Moving Average)
+    df['SMA_20'] = ta.trend.sma_indicator(df['Close'], window=20)
+
+    # RSI (Relative Strength Index, 14-day)
+    df['RSI'] = ta.momentum.rsi(df['Close'], window=14)
+
+    # Bollinger Bands (20-day window, 2 standard deviations)
+    bb = ta.volatility.BollingerBands(df['Close'], window=20, window_dev=2)
+    df['BB_upper'] = bb.bollinger_hband()
+    df['BB_lower'] = bb.bollinger_lband()
+
+    # MACD (Moving Average Convergence Divergence)
+    macd = ta.trend.MACD(df['Close'])
+    df['MACD'] = macd.macd()
+    df['MACD_signal'] = macd.macd_signal()
+
+    # Return only the latest available data for the indicators
+    latest = df.iloc[-1][['SMA_20', 'RSI', 'BB_upper', 'BB_lower', 'MACD', 'MACD_signal']]
+    return latest.to_dict()
+
+
+# requirements.txt
+fastapi
+uvicorn
+pandas
+yfinance
+ta
