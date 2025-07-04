@@ -1,0 +1,56 @@
+# main.py
+from fastapi import FastAPI
+from sentiment import get_sentiment_scores
+
+app = FastAPI()
+
+# Define the API route to get sentiment for a given stock ticker
+@app.get("/sentiment/{ticker}")
+def get_sentiment(ticker: str):
+    result = get_sentiment_scores(ticker)
+    return result
+
+
+# sentiment.py
+import requests
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from datetime import datetime
+import os
+
+# Replace with your own NewsAPI key
+NEWSAPI_KEY = os.getenv("NEWSAPI_KEY", "your_newsapi_key")
+
+analyzer = SentimentIntensityAnalyzer()
+
+def get_sentiment_scores(ticker: str):
+    url = (
+        f"https://newsapi.org/v2/everything?q={ticker}&sortBy=publishedAt&apiKey={NEWSAPI_KEY}"
+    )
+    response = requests.get(url)
+    articles = response.json().get("articles", [])
+
+    daily_sentiment = {}
+
+    for article in articles:
+        date = article["publishedAt"].split("T")[0]
+        title = article["title"]
+        score = analyzer.polarity_scores(title)["compound"]
+
+        if date not in daily_sentiment:
+            daily_sentiment[date] = []
+        daily_sentiment[date].append(score)
+
+    # Aggregate sentiment scores per date (average)
+    aggregated = {
+        date: sum(scores) / len(scores)
+        for date, scores in daily_sentiment.items()
+    }
+
+    return aggregated
+
+
+# requirements.txt
+fastapi
+uvicorn
+requests
+vaderSentiment
