@@ -1,0 +1,17 @@
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+@app.route("/recommendation/<ticker>")
+def get_recommendation(ticker):
+    recommendation = "Buy"
+    explanation = "The model predicts a price increase and sentiment is positive."
+
+    return jsonify({
+        "ticker": ticker.upper(),
+        "recommendation": recommendation,
+        "explanation": explanation
+    })
+
+if __name__ == "__main__":
+    app.run(debug=True)
