@@ -1,0 +1,99 @@
+pip install flask pandas numpy
+
+from flask import Flask, request, jsonify
+import pandas as pd
+import numpy as np
+
+app = Flask(__name__)
+
+# Simulated function to load predicted prices and sentiment scores
+# In practice, you should replace this with your actual model outputs
+def load_predicted_data(ticker):
+    np.random.seed(0)  # for reproducibility
+    dates = pd.date_range(start='2022-01-01', periods=100)
+    prices = np.cumsum(np.random.randn(100)) + 100  # simulated price path
+    sentiment = np.random.uniform(-1, 1, size=100)  # simulated sentiment scores
+    return pd.DataFrame({
+        'date': dates,
+        'predicted_price': prices,
+        'sentiment': sentiment
+    })
+
+# Simulate trading based on strategy
+def backtest_strategy(df, strategy):
+    df = df.copy()
+    df['position'] = 0  # default no position
+
+    if strategy == 'sentiment':
+        # Enter position if sentiment is positive enough
+        df['position'] = np.where(df['sentiment'] > 0.2, 1, 0)
+    elif strategy == 'momentum':
+        # Enter position if price is going up
+        df['position'] = np.where(df['predicted_price'].diff() > 0, 1, 0)
+    else:
+        return None  # unknown strategy
+
+    # Calculate daily returns and strategy returns
+    df['returns'] = df['predicted_price'].pct_change()
+    df['strategy_returns'] = df['position'].shift(1) * df['returns']  # shift to avoid lookahead bias
+
+    return df
+
+# Compute evaluation metrics: Sharpe Ratio, CAGR, Max Drawdown
+def calculate_metrics(df):
+    strategy_returns = df['strategy_returns'].dropna()
+
+    # Annualized Sharpe Ratio (assuming 252 trading days)
+    sharpe_ratio = (strategy_returns.mean() / strategy_returns.std()) * np.sqrt(252)
+
+    # CAGR (Compound Annual Growth Rate)
+    cumulative_return = (1 + strategy_returns).prod() - 1
+    days = (df['date'].iloc[-1] - df['date'].iloc[0]).days
+    cagr = (1 + cumulative_return) ** (365.0 / days) - 1
+
+    # Max Drawdown
+    cum_returns = (1 + strategy_returns).cumprod()
+    running_max = cum_returns.cummax()
+    drawdown = (cum_returns - running_max) / running_max
+    max_drawdown = drawdown.min()
+
+    return {
+        'sharpe_ratio': round(sharpe_ratio, 3),
+        'cagr': round(cagr, 3),
+        'max_drawdown': round(max_drawdown, 3)
+    }
+
+# REST API endpoint: /backtest?ticker=...&strategy=...
+@app.route('/backtest', methods=['GET'])
+def backtest():
+    ticker = request.args.get('ticker')
+    strategy = request.args.get('strategy')
+
+    if not ticker or not strategy:
+        return jsonify({'error': 'ticker and strategy are required'}), 400
+
+    # Load simulated or predicted data
+    data = load_predicted_data(ticker)
+
+    # Apply the selected strategy
+    result = backtest_strategy(data, strategy)
+    if result is None:
+        return jsonify({'error': 'Unknown strategy'}), 400
+
+    # Calculate performance metrics
+    metrics = calculate_metrics(result)
+
+    return jsonify(metrics)
+
+# Run the Flask app
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+# try accessing: http://localhost:5000/backtest?ticker=AAPL&strategy=sentiment
+# {
+  "sharpe_ratio": 1.251,
+  "cagr": 0.153,
+  "max_drawdown": -0.232
+}
+#
