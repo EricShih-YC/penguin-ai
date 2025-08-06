@@ -1,0 +1,71 @@
+npm create vite@latest stock-app -- --template react
+cd stock-app
+npm install
+npm install chart.js react-chartjs-2 axios
+npm run dev
+
+import React, { useState } from 'react';
+
+export default function TickerSearch({ onSearch }) {
+  const [ticker, setTicker] = useState('');
+
+  const handleSearch = () => {
+    if (ticker.trim() !== '') {
+      onSearch(ticker.toUpperCase());
+    }
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        placeholder="Enter ticker symbol (e.g., AAPL)"
+        value={ticker}
+        onChange={(e) => setTicker(e.target.value)}
+      />
+      <button onClick={handleSearch}>Search</button>
+    </div>
+  );
+}
+
+import React from 'react';
+import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement);
+
+export default function StockOverview({ ticker }) {
+  //
+  const chartData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    datasets: [{
+      label: `${ticker} Price`,
+      data: [150, 152, 148, 155, 160],
+      borderColor: 'blue',
+      fill: false,
+    }],
+  };
+
+  return (
+    <div>
+      <h3>Stock Overview: {ticker}</h3>
+      <Line data={chartData} />
+    </div>
+  );
+}
+
+import React, { useState } from 'react';
+import TickerSearch from './components/TickerSearch';
+import StockOverview from './components/StockOverview';
+
+export default function App() {
+  const [selectedTicker, setSelectedTicker] = useState('');
+
+  return (
+    <div>
+      <h1>Stock Info App</h1>
+      <TickerSearch onSearch={setSelectedTicker} />
+      {selectedTicker && <StockOverview ticker={selectedTicker} />}
+    </div>
+  );
+}
