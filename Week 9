@@ -1,0 +1,83 @@
+TechnicalIndicators
+import React from 'react';
+import { Line } from 'react-chartjs-2';
+
+export default function TechnicalIndicators({ data }) {
+  // 
+  const chartData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    datasets: [
+      { label: 'MA10', data: [150, 151, 152, 150, 149], borderColor: 'orange' },
+      { label: 'RSI', data: [45, 50, 48, 52, 55], borderColor: 'purple' }
+    ]
+  };
+
+  return (
+    <div>
+      <h3>Technical Indicators</h3>
+      <Line data={chartData} />
+    </div>
+  );
+}
+
+
+SentimentTrend
+import React from 'react';
+import { Line } from 'react-chartjs-2';
+
+export default function SentimentTrend({ sentimentData }) {
+  const chartData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    datasets: [
+      {
+        label: 'Sentiment Score',
+        data: [0.1, 0.3, -0.2, 0.5, 0.4],
+        borderColor: 'green'
+      }
+    ]
+  };
+
+  return (
+    <div>
+      <h3>Sentiment Trend</h3>
+      <Line data={chartData} />
+    </div>
+  );
+}
+
+PredictionChart
+import React from 'react';
+import { Bar } from 'react-chartjs-2';
+
+export default function PredictionChart({ prediction }) {
+  const data = {
+    labels: ['Today', 'Tomorrow'],
+    datasets: [
+      {
+        label: 'Predicted Price',
+        data: [154, 158], 
+        backgroundColor: ['#2196f3', '#f44336']
+      }
+    ]
+  };
+
+  return (
+    <div>
+      <h3>Next-day Price Prediction</h3>
+      <Bar data={data} />
+    </div>
+  );
+}
+
+ConfidenceDisplay
+import React from 'react';
+
+export default function ConfidenceDisplay({ confidence, accuracy }) {
+  return (
+    <div>
+      <h3>Model Evaluation</h3>
+      <p>Prediction Confidence: {confidence}%</p>
+      <p>Historical Accuracy: {accuracy}%</p>
+    </div>
+  );
+}
