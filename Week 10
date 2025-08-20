@@ -1,0 +1,76 @@
+// Week 10: Frontend – AI Recommendation UX (Logic Only)
+
+// --- Task 1: Visualize Buy/Sell/Hold recommendations ---
+
+// Sample recommendation data
+const recommendations = [
+  { stock: "AAPL", action: "Buy" },
+  { stock: "TSLA", action: "Hold" },
+  { stock: "NVDA", action: "Sell" }
+];
+
+// Mapping each action to a color
+const actionColor = {
+  Buy: "green",
+  Hold: "gray",
+  Sell: "red"
+};
+
+// Display each recommendation with corresponding color (logic only)
+recommendations.forEach(rec => {
+  console.log(`${rec.stock}: ${rec.action} [Color: ${actionColor[rec.action]}]`);
+});
+
+
+// --- Task 2: Add explanation panel for each recommendation ---
+
+// Each recommendation now includes an explanation from the AI model
+const recommendationsWithExplanation = [
+  {
+    stock: "AAPL",
+    action: "Buy",
+    explanation: "Strong earnings and positive growth outlook."
+  },
+  {
+    stock: "TSLA",
+    action: "Hold",
+    explanation: "Valuation is high; wait for better entry point."
+  },
+  {
+    stock: "NVDA",
+    action: "Sell",
+    explanation: "Short-term correction expected after recent rally."
+  }
+];
+
+// Display each recommendation with explanation (logic only)
+recommendationsWithExplanation.forEach(rec => {
+  console.log(`\n${rec.stock}: ${rec.action}`);
+  console.log(`Explanation: ${rec.explanation}`);
+});
+
+
+// --- Task 3 (Optional): Add news sentiment timeline ---
+
+// Timeline data with news sentiment over time
+const newsSentimentTimeline = [
+  { date: "2025-08-01", sentiment: "positive" },
+  { date: "2025-08-02", sentiment: "neutral" },
+  { date: "2025-08-03", sentiment: "negative" }
+];
+
+// Color mapping for sentiment
+const sentimentColor = {
+  positive: "green",
+  neutral: "gray",
+  negative: "red"
+};
+
+// Display sentiment timeline (logic only)
+console.log("\nNews Sentiment Timeline:");
+newsSentimentTimeline.forEach(entry => {
+  console.log(`${entry.date}: ${entry.sentiment} [Color: ${sentimentColor[entry.sentiment]}]`);
+});
+
+
+// --- Milestone: Full recommendation workflow logic complete ---
