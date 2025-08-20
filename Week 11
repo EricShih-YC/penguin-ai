@@ -1,0 +1,60 @@
+# test_api.py
+# Pytest unit test for a sample API function
+
+from my_app.api import get_stock_recommendation
+
+def test_get_stock_recommendation():
+    result = get_stock_recommendation("AAPL")
+    assert "action" in result
+    assert result["action"] in ["Buy", "Sell", "Hold"]
+
+// Recommendation.test.js
+// React Testing Library test for recommendation display component
+
+import { render, screen } from "@testing-library/react";
+import Recommendation from "../components/Recommendation";
+
+test("renders recommendation component with action", () => {
+  render(<Recommendation stock="AAPL" action="Buy" />);
+  const actionText = screen.getByText(/Buy/i);
+  expect(actionText).toBeInTheDocument();
+});
+# api.py
+# Redis caching for expensive API endpoint
+
+import redis
+import json
+from flask import Flask, request, jsonify
+from time import sleep
+
+app = Flask(__name__)
+cache = redis.Redis(host='localhost', port=6379)
+
+@app.route('/recommend/<symbol>')
+def get_recommendation(symbol):
+    # Check if cached
+    cached = cache.get(symbol)
+    if cached:
+        return jsonify(json.loads(cached))
+    
+    # Simulate expensive computation
+    sleep(2)
+    result = {"symbol": symbol, "action": "Buy"}  # mocked result
+
+    # Store in Redis
+    cache.setex(symbol, 60, json.dumps(result))  # expire in 60s
+    return jsonify(result)
+# profile_api.py
+# Basic profiling of API function using time module
+
+import time
+
+def expensive_recommendation():
+    start = time.time()
+    
+    # Simulate expensive logic
+    time.sleep(2)
+    
+    end = time.time()
+    print(f"Execution time: {end - start:.2f} seconds")
+    return {"action": "Hold"}
